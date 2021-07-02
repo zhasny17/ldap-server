@@ -1,0 +1,10 @@
+config.*.json
+venv
+__pycache__
+*.sh
+.pytest_cache
+node_modules
+.vscode
+htmlcov
+.coverage
+.serverless

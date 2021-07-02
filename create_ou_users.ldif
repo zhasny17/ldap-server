@@ -1,0 +1,5 @@
+dn: ou=Users,dc=techinterview,dc=com
+changetype: add
+objectClass: organizationalUnit
+objectClass: top
+ou: Users

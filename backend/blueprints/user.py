@@ -41,6 +41,13 @@ ADD_USER_SCHEMA = {
 #############################################################################
 #                             HELPER FUNCTIONS                              #
 #############################################################################
+def jsonify_user(user):
+    return {
+        'uid': user.get('uid'),
+        'cn': user.get('cn'),
+        'sn': user.get('sn'),
+        'description': user.get('description')
+    }
 
 
 #############################################################################
@@ -79,10 +86,15 @@ def get_user(uid):
         raise NotFoundException(message='User not found')
 
     return jsonify(
-        {
-            'uid': user.get('uid'),
-            'cn': user.get('cn'),
-            'sn': user.get('sn'),
-            'description': user.get('description'),
-        }
+        jsonify_user(user)
+    )
+
+
+@bp.route('/users', methods=['GET'])
+def get_users():
+    users = model.get_users()
+    for index, user in enumerate(users):
+        users[index] = jsonify_user(user)
+    return jsonify(
+        {'users': users}
     )

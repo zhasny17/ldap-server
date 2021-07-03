@@ -50,6 +50,17 @@ def test_get_user(http_service):
     assert response.status_code == 200
 
 
+def test_get_users(http_service):
+    response = requests.get(
+        http_service + "/users",
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    users = data['users']
+    assert len(users) > 0
+
+
 #############################################################################
 #                          NO HAPPY PATH TESTS                              #
 #############################################################################

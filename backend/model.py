@@ -48,3 +48,19 @@ def get_user(uid):
             data[key] = data[key][0].decode('utf-8')
 
     return data
+
+
+def get_users():
+    conn = open_conn()
+
+    ldap_filter = 'objectClass=inetOrgPerson'
+    base = 'ou=users,' + LDAP_DC
+    users = conn.search_s(base,ldap.SCOPE_SUBTREE,ldap_filter)
+    conn.unbind_s()
+    for index, user in enumerate(users):
+        data = user[1]
+        for key in data:
+            data[key] = data[key][0].decode('utf-8')
+        users[index] = data
+
+    return users

@@ -33,3 +33,18 @@ def create_user(uid, cn, sn, description):
 
     conn.add_s(dn, ldif)
     conn.unbind_s()
+
+
+def get_user(uid):
+    conn = open_conn()
+
+    ldap_filter = f'(uid={uid})'
+    res = conn.search_s(LDAP_DC,ldap.SCOPE_SUBTREE,ldap_filter)
+    conn.unbind_s()
+    data = None
+    if res:
+        data = res[0][1]
+        for key in data:
+            data[key] = data[key][0].decode('utf-8')
+
+    return data

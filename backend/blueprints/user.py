@@ -1,4 +1,5 @@
 from flask import Blueprint, Response, request
+from flask.json import jsonify
 from backend.exceptions import NotFoundException, BadRequestException, ConflictException
 from backend import model
 from jsonschema import validate, ValidationError
@@ -69,3 +70,19 @@ def create_user():
         raise ConflictException(message='Already exists')
 
     return Response(status=201)
+
+
+@bp.route('/users/<string:uid>', methods=['GET'])
+def get_user(uid):
+    user = model.get_user(uid)
+    if not user:
+        raise NotFoundException(message='User not found')
+
+    return jsonify(
+        {
+            'uid': user.get('uid'),
+            'cn': user.get('cn'),
+            'sn': user.get('sn'),
+            'description': user.get('description'),
+        }
+    )

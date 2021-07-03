@@ -42,6 +42,14 @@ def test_add_user(http_service):
     assert response.status_code == 201
 
 
+def test_get_user(http_service):
+    response = requests.get(
+        http_service + "/users/56789",
+    )
+
+    assert response.status_code == 200
+
+
 #############################################################################
 #                          NO HAPPY PATH TESTS                              #
 #############################################################################
@@ -87,3 +95,11 @@ def test_add_user_with_conflict_error(http_service):
         json=data
     )
     assert response.status_code == 409
+
+
+def test_get_nonexistent_user(http_service):
+    response = requests.get(
+        http_service + "/users/1111",
+    )
+
+    assert response.status_code == 404

@@ -61,6 +61,20 @@ def test_get_users(http_service):
     assert len(users) > 0
 
 
+def test_delete_user(http_service):
+    response = requests.delete(
+        http_service + "/users/56789",
+    )
+
+    assert response.status_code == 204
+
+    response = requests.get(
+        http_service + "/users/56789",
+    )
+
+    assert response.status_code == 404
+
+
 #############################################################################
 #                          NO HAPPY PATH TESTS                              #
 #############################################################################

@@ -67,6 +67,9 @@ def create_user():
         raise BadRequestException(str(err))
 
     try:
+        check_user = model.get_user(payload['uid'])
+        if check_user:
+            raise ldap.ALREADY_EXISTS
         model.create_user(
             uid=payload['uid'],
             cn=payload['cn'],
@@ -98,3 +101,17 @@ def get_users():
     return jsonify(
         {'users': users}
     )
+
+
+@bp.route('/users/<string:uid>', methods=['DELETE'])
+def delete_users(uid):
+    try:
+        user = model.get_user(uid)
+        if not user:
+            raise ldap.NO_SUCH_OBJECT
+        user_cn = user.get('cn')
+        model.delete_user(user_cn)
+    except ldap.NO_SUCH_OBJECT:
+        raise NotFoundException(message='user not found')
+
+    return Response(status=204)

@@ -35,6 +35,7 @@ def create_user(uid, cn, sn, description):
     conn.unbind_s()
 
 
+
 def get_user(uid):
     conn = open_conn()
 
@@ -64,3 +65,10 @@ def get_users():
         users[index] = data
 
     return users
+
+
+def delete_user(cn):
+    conn = open_conn()
+    filter = f'cn={cn},ou=users,' + LDAP_DC
+    conn.delete_s(filter)
+    conn.unbind_s()

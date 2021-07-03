@@ -7,6 +7,6 @@ def create_app(config=None):
     if config:
         app.config.from_mapping(**config)
 
-    app.register_blueprint(user.bp, url_prefix='/users')
+    app.register_blueprint(user.bp)
 
     return app

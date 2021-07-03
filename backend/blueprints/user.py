@@ -13,6 +13,6 @@ bp = Blueprint('users', __name__)
 #############################################################################
 #                                  ROUTES                                   #
 #############################################################################
-@bp.route('/health_check', methods=['GET'])
+@bp.route('/', methods=['GET'])
 def health_check():
     return 'ok'

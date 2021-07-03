@@ -1,0 +1,178 @@
+openapi: 3.0.0
+info:
+  title: ldap-server API
+  version: 1.0.0
+
+paths:
+  /users:
+    get:
+      summary: List of all users
+      tags:
+        - users
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListUsers"
+    post:
+      summary: Create a user
+      tags:
+        - users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createUser"
+      responses:
+        201:
+          description: OK
+        400:
+          $ref: "#/components/responses/BadRequest"
+        409:
+          $ref: "#/components/responses/Conflict"
+  /users/{uid}:
+    get:
+      summary: Specific user info
+      tags:
+        - users
+      parameters:
+        - name: uid
+          in: path
+          description: user ID
+          required: true
+          schema:
+            type: string
+      responses:
+          200:
+            description: OK
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/User"
+          400:
+            $ref: "#/components/responses/BadRequest"
+    put:
+      summary: Update a user
+      tags:
+        - users
+      parameters:
+        - name: uid
+          in: path
+          description: user ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/updateUser"
+      responses:
+        204:
+          description: OK
+        400:
+          $ref: "#/components/responses/BadRequest"
+        404:
+          $ref: "#/components/responses/NotFound"
+    delete:
+      summary: remove a user
+      tags:
+        - users
+      parameters:
+        - name: uid
+          in: path
+          description: user ID
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: OK
+        404:
+          $ref: "#/components/responses/NotFound"
+
+components:
+  responses:
+    BadRequest:
+      description: One or more invalid parameters.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Forbidden:
+      description: Permission denied
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Unauthorized:
+      description: Invalid credentials
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Conflict:
+      description: Conflito com outro recurso já existente
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        error_description:
+          type: string
+    User:
+      type: object
+      properties:
+        uid:
+          type: string
+        cn:
+          type: string
+        sn:
+          type: string
+        description:
+          type: string
+    ListUsers:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+    createUser:
+      type: object
+      properties:
+        uid:
+          type: string
+        cn:
+          type: string
+        sn:
+          type: string
+        description:
+          type: string
+      required:
+        - uid
+        - cn
+        - sn
+    updateUser:
+      type: object
+      properties:
+        sn:
+          type: string
+        description:
+          type: string

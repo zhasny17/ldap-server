@@ -2,7 +2,7 @@ version: "2"
 services:
     app:
         build:
-            context: .
+            context: ../
             target: app-server
         ports:
         - "5000:5000"
@@ -14,23 +14,14 @@ services:
             - ldap_server
     ldap_server:
         build:
-            context: .
+            context: ../
             target: ldap-server
             # login DN: cn=admin,dc=techinterview,dc=com
         ports:
-            - 389:389
+            - 390:390
         volumes:
             - ldap_data:/var/lib/ldap
             - ldap_config:/etc/ldap/slapd.d
-    ldap_server_admin:
-        image: osixia/phpldapadmin:0.7.2
-        ports:
-            - 8090:80
-        environment:
-            PHPLDAPADMIN_LDAP_HOSTS: ldap_server
-            PHPLDAPADMIN_HTTPS: 'false'
-        depends_on:
-            - ldap_server
 
 volumes:
     ldap_data:

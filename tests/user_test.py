@@ -17,14 +17,7 @@ def is_responsive(url):
 
 
 @pytest.fixture(scope="session")
-def docker_compose_file(pytestconfig):
-    return os.path.join(str(pytestconfig.rootdir), "", "docker-compose.yml")
-
-@pytest.fixture(scope="session")
 def http_service(docker_ip, docker_services):
-    """Ensure that HTTP service is up and responsive."""
-
-    # `port_for` takes a container port and returns the corresponding host port
     port = docker_services.port_for("app", 5000)
     url = "http://{}:{}".format(docker_ip, port)
     docker_services.wait_until_responsive(
@@ -33,19 +26,64 @@ def http_service(docker_ip, docker_services):
     return url
 
 
-
-
-
 #############################################################################
 #                             HAPPY PATH TESTS                              #
 #############################################################################
-def test_status_code(http_service):
-    status = 200
-    response = requests.get(http_service + "/")
+def test_add_user(http_service):
+    response = requests.post(
+        http_service + "/users",
+        json={
+            "uid": "56789",
+            "cn": "Marcos",
+            "sn": "Marcos"
+        }
+    )
 
-    assert response.status_code == status
+    assert response.status_code == 201
 
 
 #############################################################################
 #                          NO HAPPY PATH TESTS                              #
 #############################################################################
+def test_add_user_with_property_error(http_service):
+    response = requests.post(
+        http_service + "/users",
+        json={
+            "uid": "56789",
+            "cn": 123,
+            "sn": "Marcos"
+        }
+    )
+
+    assert response.status_code == 400
+
+
+def test_add_user_with_no_required_property(http_service):
+    response = requests.post(
+        http_service + "/users",
+        json={
+            "uid": "56789",
+            "sn": "Marcos"
+        }
+    )
+
+    assert response.status_code == 400
+
+
+def test_add_user_with_conflict_error(http_service):
+    data = {
+        "uid": "123",
+        "cn": "Lucas",
+        "sn": "Luz"
+    }
+    response = requests.post(
+        http_service + "/users",
+        json=data
+    )
+    assert response.status_code == 201
+
+    response = requests.post(
+        http_service + "/users",
+        json=data
+    )
+    assert response.status_code == 409

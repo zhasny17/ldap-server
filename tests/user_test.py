@@ -61,6 +61,24 @@ def test_get_users(http_service):
     assert len(users) > 0
 
 
+def test_update_user(http_service):
+    response = requests.put(
+        http_service + "/users/56789",
+        json={
+            "description": 'update done!',
+            "sn": 'Marcos updated!'
+        }
+    )
+    assert response.status_code == 204
+
+    response = requests.get(
+        http_service + "/users/56789",
+    )
+    data = response.json()
+    assert data['description'] == 'update done!'
+    assert data['sn'] == 'Marcos updated!'
+
+
 def test_delete_user(http_service):
     response = requests.delete(
         http_service + "/users/56789",
@@ -125,6 +143,25 @@ def test_add_user_with_conflict_error(http_service):
 def test_get_nonexistent_user(http_service):
     response = requests.get(
         http_service + "/users/1111",
+    )
+
+    assert response.status_code == 404
+
+
+def test_update_nonexistent_user(http_service):
+    response = requests.put(
+        http_service + "/users/9999",
+        json={
+            "description": 'update done!',
+            "sn": 'Marcos updated!'
+        }
+    )
+    assert response.status_code == 404
+
+
+def test_delete_nonexistent_user(http_service):
+    response = requests.delete(
+        http_service + "/users/9999",
     )
 
     assert response.status_code == 404

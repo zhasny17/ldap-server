@@ -2,7 +2,7 @@ import ldap
 from ldap import modlist
 import os
 
-LDAP_SERVER_ADRESS = os.environ.get('LDAP_SERVER_ADRESS', 'ldap://ldap_server:389')
+LDAP_SERVER_ADRESS = os.environ.get('LDAP_SERVER_ADRESS')
 LDAP_DC = os.environ.get('LDAP_DC')
 LDAP_ADMIN_PW = os.environ.get('LDAP_ADMIN_PW')
 
@@ -21,7 +21,7 @@ def create_user(uid, cn, sn, description):
     dn=f"cn={cn},ou=users," + LDAP_DC
 
     attrs = {}
-    attrs['objectclass'] = ['inetOrgPerson'.encode('utf-8')]
+    attrs['objectclass'] = [x.encode('utf-8') for x in ['inetOrgPerson', 'top', 'organizationalPerson', 'person']]
     attrs['cn'] = cn.encode('utf-8')
     attrs['uid'] = uid.encode('utf-8')
     attrs['sn'] = sn.encode('utf-8')
@@ -40,7 +40,8 @@ def get_user(uid):
     conn = open_conn()
 
     ldap_filter = f'(uid={uid})'
-    res = conn.search_s(LDAP_DC,ldap.SCOPE_SUBTREE,ldap_filter)
+    base = 'ou=users,' + LDAP_DC
+    res = conn.search_s(base, ldap.SCOPE_SUBTREE, ldap_filter)
     conn.unbind_s()
     data = None
     if res:
@@ -56,7 +57,7 @@ def get_users():
 
     ldap_filter = 'objectClass=inetOrgPerson'
     base = 'ou=users,' + LDAP_DC
-    users = conn.search_s(base,ldap.SCOPE_SUBTREE,ldap_filter)
+    users = conn.search_s(base, ldap.SCOPE_SUBTREE, ldap_filter)
     conn.unbind_s()
     for index, user in enumerate(users):
         data = user[1]
@@ -72,3 +73,28 @@ def delete_user(cn):
     filter = f'cn={cn},ou=users,' + LDAP_DC
     conn.delete_s(filter)
     conn.unbind_s()
+
+
+def update_user(uid, sn, description):
+    sucess = False
+    conn = open_conn()
+
+    ldap_filter = f'(uid={uid})'
+    base = 'ou=users,' + LDAP_DC
+    res = conn.search_s(base, ldap.SCOPE_SUBTREE, ldap_filter)
+    if res:
+        data = res[0]
+        dn = data[0]
+        old = data[1]
+
+        new = {**old}
+        if sn:
+            new['sn'] = [sn.encode('utf-8')]
+        if description:
+            new['description'] = [description.encode('utf-8')]
+
+        ldif = modlist.modifyModlist(old,new)
+        conn.modify_s(dn,ldif)
+        sucess = True
+
+    return sucess

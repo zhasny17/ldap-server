@@ -37,6 +37,19 @@ ADD_USER_SCHEMA = {
     ]
 }
 
+UPDATE_USER_SCHEMA = {
+    'type': 'object',
+    'properties': {
+        'sn': {
+            'type': 'string'
+        },
+        'description': {
+            'type': 'string'
+        }
+    },
+    "additionalProperties": False
+}
+
 
 #############################################################################
 #                             HELPER FUNCTIONS                              #
@@ -112,6 +125,25 @@ def delete_users(uid):
         user_cn = user.get('cn')
         model.delete_user(user_cn)
     except ldap.NO_SUCH_OBJECT:
-        raise NotFoundException(message='user not found')
+        raise NotFoundException(message='User not found')
+
+    return Response(status=204)
+
+
+@bp.route('/users/<string:uid>', methods=['PUT'])
+def update_users(uid):
+    payload = request.get_json()
+    try:
+        validate(payload, UPDATE_USER_SCHEMA)
+    except ValidationError as err:
+        raise BadRequestException(str(err))
+
+    success = model.update_user(
+        uid=uid,
+        sn=payload.get('sn'),
+        description=payload.get('description'),
+    )
+    if not success:
+        raise NotFoundException(message='User not found')
 
     return Response(status=204)

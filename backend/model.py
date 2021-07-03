@@ -1,5 +1,6 @@
 import ldap
 from ldap import modlist
+from ldap.controls.libldap import SimplePagedResultsControl
 import os
 
 LDAP_SERVER_ADRESS = os.environ.get('LDAP_SERVER_ADRESS')
@@ -55,17 +56,50 @@ def get_user(uid):
 def get_users():
     conn = open_conn()
 
+    page_control = SimplePagedResultsControl(True, size=500, cookie="")
+
     ldap_filter = 'objectClass=inetOrgPerson'
     base = 'ou=users,' + LDAP_DC
-    users = conn.search_s(base, ldap.SCOPE_SUBTREE, ldap_filter)
+    response = conn.search_ext(
+        base,
+        ldap.SCOPE_SUBTREE,
+        ldap_filter,
+        [],
+        serverctrls=[page_control],
+    )
+    result = []
+    pages = 0
+    while True:
+        pages += 1
+        rtype, rdata, rmsgid, serverctrls = conn.result3(response)
+        result.extend(rdata)
+        controls = [
+            control
+            for control in serverctrls
+            if control.controlType == SimplePagedResultsControl.controlType
+        ]
+        if not controls:
+            break
+        if not controls[0].cookie:
+            break
+        page_control.cookie = controls[0].cookie
+        response = conn.search_ext(
+            base,
+            ldap.SCOPE_SUBTREE,
+            ldap_filter,
+            [],
+            serverctrls=[page_control],
+        )
+
     conn.unbind_s()
-    for index, user in enumerate(users):
+
+    for index, user in enumerate(result):
         data = user[1]
         for key in data:
             data[key] = data[key][0].decode('utf-8')
-        users[index] = data
+        result[index] = data
 
-    return users
+    return result
 
 
 def delete_user(cn):

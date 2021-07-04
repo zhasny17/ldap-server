@@ -5,7 +5,7 @@ services:
             context: ../
             target: app-server
         ports:
-        - "5000:5000"
+        - "5001:5000"
         environment:
             - LDAP_SERVER_ADRESS=ldap://ldap_server:389
             - LDAP_DC=dc=techinterview,dc=com
@@ -18,7 +18,7 @@ services:
             target: ldap-server
             # login DN: cn=admin,dc=techinterview,dc=com
         ports:
-            - 390:390
+            - 390:389
         volumes:
             - ldap_data:/var/lib/ldap
             - ldap_config:/etc/ldap/slapd.d
